@@ -20,8 +20,11 @@ else ()
     message(FATAL_ERROR "SCRAP_LINK_TO_TARGET is not defined")
 endif ()
 
+
+add_library(scrap_binding_dep STATIC lib.c)
+
 add_custom_command(
-        TARGET ${SCRAP_LINK_TO_TARGET}
+        TARGET scrap_binding_dep
         PRE_BUILD
         COMMAND cargo clean
         COMMAND ${CARGO_BUILD_CMD}
@@ -40,7 +43,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(scrap_binding INTERFACE "${SCRAP_LIB_DIR}/libscrap_binding.dylib")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(scrap_binding INTERFACE "${SCRAP_LIB_DIR}/scrap_binding.dll.lib" Ws2_32.lib Userenv.lib D3D11.lib ntdll.lib DXGI.lib)
+    target_link_libraries(scrap_binding INTERFACE scrap_binding_dep "${SCRAP_LIB_DIR}/scrap_binding.dll.lib" Ws2_32.lib Userenv.lib D3D11.lib ntdll.lib DXGI.lib)
 else ()
     message(FATAL_ERROR "Unsupported platform")
 endif ()
