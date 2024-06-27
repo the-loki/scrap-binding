@@ -1,0 +1,21 @@
+[package]
+name = "scrap_binding"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+scrap = "0.5"
+libc = "0.2"
+
+[build-dependencies]
+cbindgen = "0.26"
+
+[lib]
+name = "scrap_binding"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+
+[profile.release-lto]
+inherits = "release"
+lto = true
