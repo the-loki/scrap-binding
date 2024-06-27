@@ -26,6 +26,7 @@ add_custom_command(
 )
 
 add_library(scrap_binding INTERFACE)
+add_dependencies(scrap_binding scrap_binding_dep)
 target_compile_definitions(scrap_binding INTERFACE -DSCRAP_DLL)
 target_include_directories(scrap_binding INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
