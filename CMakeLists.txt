@@ -26,7 +26,6 @@ add_custom_command(
 )
 
 add_library(scrap_binding INTERFACE)
-add_dependencies(scrap_binding scrap_binding_dep)
 target_compile_definitions(scrap_binding INTERFACE -DSCRAP_DLL)
 target_include_directories(scrap_binding INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
@@ -37,7 +36,9 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(scrap_binding INTERFACE "${SCRAP_LIB_DIR}/libscrap_binding.dylib")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(scrap_binding INTERFACE scrap_binding_dep "${SCRAP_LIB_DIR}/scrap_binding.dll.lib" Ws2_32.lib Userenv.lib D3D11.lib ntdll.lib DXGI.lib)
+    target_link_libraries(scrap_binding INTERFACE "${SCRAP_LIB_DIR}/scrap_binding.dll.lib" Ws2_32.lib Userenv.lib D3D11.lib ntdll.lib DXGI.lib)
 else ()
     message(FATAL_ERROR "Unsupported platform")
 endif ()
+
+target_link_libraries(scrap_binding_dep INTERFACE scrap_binding)
