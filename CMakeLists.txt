@@ -14,8 +14,15 @@ endif ()
 set(BUILD_DEP ${PROJECT_SOURCE_DIR}/build.rs)
 set(BUILD_OUTPUT ${PROJECT_SOURCE_DIR}/include/scrap_binding.h)
 
-add_custom_target(
-        build_scrap_binding ALL
+if (DEFINED SCRAP_LINK_TO_TARGET)
+    message(STATUS "SCRAP_LINK_TO_TARGET is defined")
+else ()
+    message(FATAL_ERROR "SCRAP_LINK_TO_TARGET is not defined")
+endif ()
+
+add_custom_command(
+        TARGET ${SCRAP_LINK_TO_TARGET}
+        PRE_BUILD
         COMMAND cargo clean
         COMMAND ${CARGO_BUILD_CMD}
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -23,7 +30,6 @@ add_custom_target(
 )
 
 add_library(scrap_binding INTERFACE)
-add_dependencies(scrap_binding build_scrap_binding)
 target_compile_definitions(scrap_binding INTERFACE -DSCRAP_DLL)
 target_include_directories(scrap_binding INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
