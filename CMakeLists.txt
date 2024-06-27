@@ -14,13 +14,6 @@ endif ()
 set(BUILD_DEP ${PROJECT_SOURCE_DIR}/build.rs)
 set(BUILD_OUTPUT ${PROJECT_SOURCE_DIR}/include/scrap_binding.h)
 
-if (DEFINED SCRAP_LINK_TO_TARGET)
-    message(STATUS "SCRAP_LINK_TO_TARGET is defined")
-else ()
-    message(FATAL_ERROR "SCRAP_LINK_TO_TARGET is not defined")
-endif ()
-
-
 add_library(scrap_binding_dep STATIC lib.c)
 
 add_custom_command(
