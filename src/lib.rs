@@ -3,6 +3,12 @@ use libc;
 use scrap::Capturer;
 use scrap::Display;
 
+#[repr(C)]
+pub struct ScrapSize {
+    pub width: libc::c_int,
+    pub height: libc::c_int,
+}
+
 #[no_mangle]
 pub extern "C" fn scrap_get_display_num() -> i32 {
     let displays = Display::all().unwrap();
@@ -10,17 +16,15 @@ pub extern "C" fn scrap_get_display_num() -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn scrap_get_display_width(index: libc::size_t) -> libc::c_int {
+pub extern "C" fn scrap_get_display_size(index: libc::size_t, size: *mut ScrapSize) {
     let displays = Display::all().unwrap();
     let display = displays.get(index as usize).unwrap();
-    display.width() as libc::c_int
-}
 
-#[no_mangle]
-pub extern "C" fn scrap_get_display_height(index: libc::size_t) -> libc::c_int {
-    let displays = Display::all().unwrap();
-    let display = displays.get(index as usize).unwrap();
-    display.height() as libc::c_int
+    unsafe {
+        let size = size as *mut ScrapSize;
+        (*size).width = display.width() as libc::c_int;
+        (*size).height = display.height() as libc::c_int;
+    }
 }
 
 #[no_mangle]
