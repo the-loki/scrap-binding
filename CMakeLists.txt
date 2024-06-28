@@ -13,32 +13,35 @@ endif ()
 
 set(BUILD_DEP ${PROJECT_SOURCE_DIR}/build.rs)
 set(BUILD_OUTPUT ${PROJECT_SOURCE_DIR}/include/scrap_binding.h)
-
-add_library(scrap_binding_dep STATIC lib.c)
-
-add_custom_command(
-        TARGET scrap_binding_dep
-        PRE_BUILD
-        COMMAND cargo clean
-        COMMAND ${CARGO_BUILD_CMD}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        COMMENT "Building scrap_binding lib."
-)
-
-add_library(scrap_binding INTERFACE)
-target_compile_definitions(scrap_binding INTERFACE -DSCRAP_DLL)
-target_include_directories(scrap_binding INTERFACE "${PROJECT_SOURCE_DIR}/include")
-
 set(SCRAP_LIB_DIR "${PROJECT_SOURCE_DIR}/target/${TARGET_DIR}")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(scrap_binding INTERFACE "${SCRAP_LIB_DIR}/libscrap_binding.so")
+    set(OUTPUT_LIB_PATH "${SCRAP_LIB_DIR}/libscrap_binding.so")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    target_link_libraries(scrap_binding INTERFACE "${SCRAP_LIB_DIR}/libscrap_binding.dylib")
+    set(OUTPUT_LIB_PATH "${SCRAP_LIB_DIR}/libscrap_binding.dylib")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(scrap_binding INTERFACE "${SCRAP_LIB_DIR}/scrap_binding.dll.lib" Ws2_32.lib Userenv.lib D3D11.lib ntdll.lib DXGI.lib)
+    set(OUTPUT_LIB_PATH "${SCRAP_LIB_DIR}/scrap_binding.dll")
 else ()
     message(FATAL_ERROR "Unsupported platform")
 endif ()
 
-target_link_libraries(scrap_binding_dep INTERFACE scrap_binding)
+message(${BUILD_OUTPUT})
+
+add_custom_command(
+        OUTPUT ${BUILD_OUTPUT}
+        COMMAND cargo clean
+        COMMAND ${CARGO_BUILD_CMD}
+        DEPENDS ${BUILD_DEP}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMENT "Building scrap_binding lib."
+)
+
+add_library(scrap_binding STATIC lib.c ${BUILD_OUTPUT})
+target_compile_definitions(scrap_binding PUBLIC -DSCRAP_DLL)
+target_include_directories(scrap_binding PUBLIC "${PROJECT_SOURCE_DIR}/include")
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_link_libraries(scrap_binding PRIVATE "${OUTPUT_LIB_PATH}.lib")
+else ()
+    target_link_libraries(scrap_binding PRIVATE ${OUTPUT_LIB_PATH})
+endif ()
