@@ -11,8 +11,6 @@ else ()
     set(TARGET_DIR "release-lto")
 endif ()
 
-set(BUILD_DEP ${PROJECT_SOURCE_DIR}/build.rs)
-set(BUILD_OUTPUT ${PROJECT_SOURCE_DIR}/include/scrap_binding.h)
 set(SCRAP_LIB_DIR "${PROJECT_SOURCE_DIR}/target/${TARGET_DIR}")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -25,18 +23,17 @@ else ()
     message(FATAL_ERROR "Unsupported platform")
 endif ()
 
-message(${BUILD_OUTPUT})
+add_library(scrap_binding STATIC lib.c)
 
 add_custom_command(
-        OUTPUT ${BUILD_OUTPUT}
+        TARGET scrap_binding
+        PRE_LINK
         COMMAND cargo clean
         COMMAND ${CARGO_BUILD_CMD}
-        DEPENDS ${BUILD_DEP}
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         COMMENT "Building scrap_binding lib."
 )
 
-add_library(scrap_binding STATIC lib.c ${BUILD_OUTPUT})
 target_compile_definitions(scrap_binding PUBLIC -DSCRAP_DLL)
 target_include_directories(scrap_binding PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
