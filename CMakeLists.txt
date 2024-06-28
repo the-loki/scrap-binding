@@ -25,15 +25,15 @@ endif ()
 
 add_library(scrap_binding STATIC lib.c)
 
-add_custom_command(
-        TARGET scrap_binding
-        PRE_LINK
+add_custom_target(
+        scrap_binding_dep ALL
         COMMAND cargo clean
         COMMAND ${CARGO_BUILD_CMD}
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         COMMENT "Building scrap_binding lib."
 )
 
+add_dependencies(scrap_binding scrap_binding_dep)
 target_compile_definitions(scrap_binding PUBLIC -DSCRAP_DLL)
 target_include_directories(scrap_binding PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
