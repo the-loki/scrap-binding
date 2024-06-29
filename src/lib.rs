@@ -1,4 +1,5 @@
 use libc;
+use std::io;
 
 use scrap::Capturer;
 use scrap::Display;
@@ -7,6 +8,14 @@ use scrap::Display;
 pub struct ScrapSize {
     pub width: libc::c_int,
     pub height: libc::c_int,
+}
+
+#[repr(C)]
+pub enum ScrapCaptureResult {
+    ScrapCaptureSuccessful = 0,
+    ScrapCaptureShouldSkip = 1,
+    ScrapCaptureUnknown = 2,
+    ScrapCaptureShouldReset = 3,
 }
 
 #[no_mangle]
@@ -50,7 +59,7 @@ pub extern "C" fn scrap_get_frame(
     capturer: *mut libc::c_void,
     dst: *mut libc::c_void,
     size: libc::size_t,
-) -> libc::c_int {
+) -> ScrapCaptureResult {
     unsafe {
         let capturer = &mut *(capturer as *mut Capturer);
         let frame = capturer.frame();
@@ -60,16 +69,26 @@ pub extern "C" fn scrap_get_frame(
                 let len = frame.len();
 
                 if size != len {
-                    return 0;
+                    return ScrapCaptureResult::ScrapCaptureUnknown;
                 }
 
                 libc::memcpy(dst, frame.as_ptr() as *const libc::c_void, len);
-                return 1;
+                return ScrapCaptureResult::ScrapCaptureSuccessful;
             }
             Err(e) => {
                 println!("Error: {}", e);
-                return 0;
+                make_capture_result(e)
             }
         }
+    }
+}
+
+fn make_capture_result(e: io::Error) -> ScrapCaptureResult {
+    match e.kind() {
+        io::ErrorKind::ConnectionReset => ScrapCaptureResult::ScrapCaptureShouldReset,
+        io::ErrorKind::ConnectionAborted => ScrapCaptureResult::ScrapCaptureShouldReset,
+        io::ErrorKind::InvalidData => ScrapCaptureResult::ScrapCaptureShouldReset,
+        io::ErrorKind::WouldBlock => ScrapCaptureResult::ScrapCaptureShouldSkip,
+        _ => ScrapCaptureResult::ScrapCaptureUnknown,
     }
 }
