@@ -50,8 +50,6 @@ pub extern "C" fn scrap_free_capturer(capturer: *mut libc::c_void) {
         let capturer = capturer as *mut Capturer;
         drop(Box::from_raw(capturer));
     }
-
-    println!("capturer freed.")
 }
 
 #[no_mangle]
@@ -75,20 +73,22 @@ pub extern "C" fn scrap_get_frame(
                 libc::memcpy(dst, frame.as_ptr() as *const libc::c_void, len);
                 return ScrapCaptureResult::ScrapCaptureSuccessful;
             }
-            Err(e) => {
-                println!("Error: {}", e);
-                make_capture_result(e)
-            }
+            Err(e) => make_capture_result(e),
         }
     }
 }
 
 fn make_capture_result(e: io::Error) -> ScrapCaptureResult {
-    match e.kind() {
+    let result = match e.kind() {
         io::ErrorKind::ConnectionReset => ScrapCaptureResult::ScrapCaptureShouldReset,
         io::ErrorKind::ConnectionAborted => ScrapCaptureResult::ScrapCaptureShouldReset,
         io::ErrorKind::InvalidData => ScrapCaptureResult::ScrapCaptureShouldReset,
         io::ErrorKind::WouldBlock => ScrapCaptureResult::ScrapCaptureShouldSkip,
-        _ => ScrapCaptureResult::ScrapCaptureUnknown,
-    }
+        _ => {
+            println!("{:?}", e);
+            ScrapCaptureResult::ScrapCaptureUnknown
+        }
+    };
+
+    return result;
 }
