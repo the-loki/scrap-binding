@@ -16,6 +16,5 @@ crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 
-[profile.release-lto]
-inherits = "release"
+[profile.release]
 lto = true
