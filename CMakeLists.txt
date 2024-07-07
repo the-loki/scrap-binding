@@ -35,7 +35,7 @@ endif ()
 add_library(scrap_binding STATIC)
 
 add_custom_command(
-        TARGET scrap_binding PRE_BUILD
+        TARGET scrap_binding PRE_LINK
         COMMAND cargo clean
         COMMAND ${CARGO_BUILD_CMD}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OUTPUT_LIB_PATH} ${CMAKE_BINARY_DIR}/${LIB_NAME}
